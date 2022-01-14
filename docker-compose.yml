@@ -1,0 +1,9 @@
+version: "3.7"
+services:
+  server:
+    image: cc-java-server
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    ports:
+      - 8080:8080
