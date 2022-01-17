@@ -1,7 +1,7 @@
 # code_challenge_220112
 Run 'docker-compose up --detach --build' at the root directory ('code_challenge_220112/') to build and launch the services.
 
-The client web page can be access on 'http://localhost:8000/'.
+The client web page can be accessed on 'http://localhost:8000/'.
 
 Customer ID must be inputed before initiating the API call via the Submit button. Use the '+ Add Item' button to add items for the api. The red 'x' button on the right will remove an item listing. The 'x Reset' button will clear all item listings.
 
