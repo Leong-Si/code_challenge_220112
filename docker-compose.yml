@@ -1,18 +1,21 @@
 version: "3.7"
 services:
-  db:
-    image: mysql:5.7
+  cc-db:
+    image: postgres:14-alpine
+    ports:
+      - 5432:5432
     volumes:
-      - cc-database:/var/lib/mysql
+      - cc-database:/var/lib/postgresql/data
       #   .sh, .sql, .sql.gz files in /docker-entrypoint-initdb.d will be
       # executed when the (database) container is started for the first time
       - ./database:/docker-entrypoint-initdb.d
     environment:
-      MYSQL_ROOT_PASSWORD: secret
-      MYSQL_DATABASE: codechallenge
+      POSTGRES_USER: server
+      POSTGRES_PASSWORD: secret
+      POSTGRES_DB: codechallenge
     restart: always
-  server:
-    image: cc-java-server
+  cc-server:
+    image: cc-nodejs-server
     build:
       context: ./server
       dockerfile: Dockerfile
@@ -20,6 +23,6 @@ services:
       - 8080:8080
     restart: always
     depends_on:
-      - db
+      - cc-db
 volumes:
   cc-database:
