@@ -22,10 +22,6 @@ function SeedsDatabase() {
   return pool.query(fileContent);
 }
 
-function Price(x) {
-  return Number.parseFloat(x).toFixed(2);
-}
-
 function PaymentRequest(customerID, itemQuantityMap, callback, errCallback) {
   console.log(`Processing payment request for customer ${customerID}.`);
   let customerName, customerCountry, customerZip;
@@ -52,7 +48,7 @@ function PaymentRequest(customerID, itemQuantityMap, callback, errCallback) {
   /*
    * Call TaxJar api for tax rates
    */
-  Promise.all([customerInfoPromise, itemsInfoPromise]).then((values) =>{
+  Promise.all([customerInfoPromise, itemsInfoPromise]).then((values) => {
     let customerResult = values[0];
     let itemsResult = values[1];
 
@@ -80,7 +76,6 @@ function PaymentRequest(customerID, itemQuantityMap, callback, errCallback) {
         const { statusCode } = res;
         const contentType = res.headers['content-type'];
 
-        let error;
         if (statusCode >= 400) {
           res.resume();
           return errCallback && errCallback(`Request Failed. Status Code: ${statusCode}.`);
@@ -117,9 +112,9 @@ function PaymentRequest(customerID, itemQuantityMap, callback, errCallback) {
 
               itemsOutput.push({
                 id: itemResult.id,
-                totalPrice: Price(totalPrice),
-                taxComponent: Price(taxComponent),
-                taxedTotalPrice: Price(taxedTotal)
+                totalPrice: totalPrice,
+                taxComponent: taxComponent,
+                taxedTotalPrice: taxedTotal
               });
             }
 
@@ -137,9 +132,27 @@ function PaymentRequest(customerID, itemQuantityMap, callback, errCallback) {
         return errCallback && errCallback(e.message);
       });
     }
-  });
+  }).catch(err => errCallback && errCallback(err.message));
+}
 
-  return;
+function AllItemRequest(callback, errCallback) {
+  /*
+   * Fetch item IDs from database
+   */
+  const itemsIDQuery =
+  ` SELECT id
+    FROM Item
+  `;
+  pool.query(itemsIDQuery)
+    .then((queryResult) => {
+      let idArray = [];
+      for (let i=0; i<queryResult.rows.length; ++i) {
+        idArray.push(queryResult.rows[i]);
+      }
+      return callback && callback(JSON.stringify(idArray));
+    }).catch(err => {
+      return errCallback && errCallback(err.message);
+    });
 }
 
 const requestListener = function(req, res) {
@@ -164,10 +177,26 @@ const requestListener = function(req, res) {
         let itemQuantityMap = new Map();
         for (let i=0; i<itemIDs.length; ++i) {
           let quantity = quantities.length <= i ? 0 : parseInt(quantities[i], 10);
-          itemQuantityMap.set(parseInt(itemIDs[i], 10), quantity);
+          let parsedItemID = parseInt(itemIDs[i], 10);
+          if (itemQuantityMap.has(parsedItemID)) {
+            let prevQuantity = itemQuantityMap.get(parsedItemID);
+            itemQuantityMap.set(parsedItemID, prevQuantity + quantity)
+          } else {
+            itemQuantityMap.set(parsedItemID, quantity);
+          }
         }
 
         PaymentRequest(customerID, itemQuantityMap, (result) => {
+          res.setHeader('Content-Type', 'application/json');
+          res.writeHead(200);
+          res.end(result);
+        }, (err) => {
+          res.writeHead(500);
+          res.end(err);
+        });
+        break;
+      case 'allitems':
+        AllItemRequest((result) => {
           res.setHeader('Content-Type', 'application/json');
           res.writeHead(200);
           res.end(result);
