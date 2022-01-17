@@ -100,27 +100,29 @@ function PaymentRequest(customerID, itemQuantityMap, callback, errCallback) {
             }
 
             let itemsOutput = [];
+            let subTotalSum = 0.00;
             for (let i=0; i<itemsResult.rows.length; ++i) {
               let itemResult = itemsResult.rows[i];
 
               let basePrice = itemResult.price;
               let itemQuantity = itemQuantityMap.get(itemResult.id)
 
-              let totalPrice = basePrice * itemQuantity;
-              let taxComponent = totalPrice * taxrate;
-              let taxedTotal = totalPrice + taxComponent;
-
+              let subTotal = basePrice * itemQuantity;
+              subTotalSum += subTotal;
               itemsOutput.push({
                 id: itemResult.id,
-                totalPrice: totalPrice,
-                taxComponent: taxComponent,
-                taxedTotalPrice: taxedTotal
+                subTotal: subTotal
               });
             }
 
+            let taxComponent = subTotalSum * taxrate;
+            let totalPrice = subTotalSum + taxComponent;
+
             let output = {
               name: customerName,
-              items: itemsOutput
+              items: itemsOutput,
+              taxComponent: taxComponent,
+              totalPrice: totalPrice
             };
 
             return callback && callback(JSON.stringify(output));
@@ -147,7 +149,7 @@ function AllItemRequest(callback, errCallback) {
     .then((queryResult) => {
       let idArray = [];
       for (let i=0; i<queryResult.rows.length; ++i) {
-        idArray.push(queryResult.rows[i]);
+        idArray.push(queryResult.rows[i].id);
       }
       return callback && callback(JSON.stringify(idArray));
     }).catch(err => {
@@ -163,47 +165,64 @@ const requestListener = function(req, res) {
 
   if (req.method == 'GET') {
     switch (args.shift()) {
-      case 'payment':
-        let customerID = parseInt(url.searchParams.get('customer'), 10);
-        let itemIDs = url.searchParams.getAll('items').map(e => e.split(',')).flat();
-        let quantities = url.searchParams.getAll('quantities').map(e => e.split(',')).flat();
+      case 'api':
+        switch (args.shift()) {
+          case 'payment':
+            let customerID = parseInt(url.searchParams.get('customer'), 10);
+            let itemIDs = url.searchParams.getAll('items').map(e => e.split(',')).flat();
+            let quantities = url.searchParams.getAll('quantities').map(e => e.split(',')).flat();
 
-        if (isNaN(customerID) || itemIDs.some(e => isNaN(e)) || quantities.some(e => isNaN(e))) {
-          res.writeHead(500);
-          res.end('Invalid query parameters.');
-          return;
+            if (isNaN(customerID) || itemIDs.some(e => isNaN(e)) || quantities.some(e => isNaN(e))) {
+              res.writeHead(500);
+              res.end('Invalid query parameters.');
+              return;
+            }
+
+            let itemQuantityMap = new Map();
+            for (let i=0; i<itemIDs.length; ++i) {
+              let parsedItemID = parseInt(itemIDs[i], 10);
+
+              let quantity = quantities.length <= i ? 0 : parseInt(quantities[i], 10);
+              quantity = Math.max(0, quantity);
+
+              if (itemQuantityMap.has(parsedItemID)) {
+                let prevQuantity = itemQuantityMap.get(parsedItemID);
+                itemQuantityMap.set(parsedItemID, prevQuantity + quantity)
+              } else {
+                itemQuantityMap.set(parsedItemID, quantity);
+              }
+            }
+
+            PaymentRequest(customerID, itemQuantityMap, (result) => {
+              res.setHeader('Content-Type', 'application/json');
+              // Added header to allow using the api with localhost
+              res.setHeader('Access-Control-Allow-Origin', '*');
+              res.writeHead(200);
+              console.log(result);
+              res.end(result);
+            }, (err) => {
+              res.writeHead(500);
+              res.end(err);
+            });
+            break;
+          case 'allitems':
+            AllItemRequest((result) => {
+              res.setHeader('Content-Type', 'application/json');
+              // Added header to allow using the api with localhost
+              res.setHeader('Access-Control-Allow-Origin', '*');
+              console.log(result);
+              res.writeHead(200);
+              res.end(result);
+            }, (err) => {
+              res.writeHead(500);
+              res.end(err);
+            });
+            break;
+          default:
+            res.writeHead(404);
+            res.end('Path not found.');
+            break;
         }
-
-        let itemQuantityMap = new Map();
-        for (let i=0; i<itemIDs.length; ++i) {
-          let quantity = quantities.length <= i ? 0 : parseInt(quantities[i], 10);
-          let parsedItemID = parseInt(itemIDs[i], 10);
-          if (itemQuantityMap.has(parsedItemID)) {
-            let prevQuantity = itemQuantityMap.get(parsedItemID);
-            itemQuantityMap.set(parsedItemID, prevQuantity + quantity)
-          } else {
-            itemQuantityMap.set(parsedItemID, quantity);
-          }
-        }
-
-        PaymentRequest(customerID, itemQuantityMap, (result) => {
-          res.setHeader('Content-Type', 'application/json');
-          res.writeHead(200);
-          res.end(result);
-        }, (err) => {
-          res.writeHead(500);
-          res.end(err);
-        });
-        break;
-      case 'allitems':
-        AllItemRequest((result) => {
-          res.setHeader('Content-Type', 'application/json');
-          res.writeHead(200);
-          res.end(result);
-        }, (err) => {
-          res.writeHead(500);
-          res.end(err);
-        });
         break;
       default:
         res.writeHead(404);

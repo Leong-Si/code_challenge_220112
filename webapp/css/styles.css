@@ -1,0 +1,160 @@
+.content-container {
+  width: 80%;
+  padding-bottom: 3vh;
+  margin: auto;
+  display: block;
+}
+
+hr.divider {
+  border-top: 3px solid #9e9e9e;
+}
+
+.top-bar {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-size: 1.5vmax;
+  padding: 1vh 1vw;
+}
+
+#customer-id-input {
+  font-size: 1.2vmax;
+  max-width: 7em;
+}
+
+.content {
+  margin: auto;
+  display: grid;
+  grid-template-columns: 4fr 3fr;
+  column-gap: 1vw;
+  grid-template-rows: min-content 1fr;
+  row-gap: 0vh;
+}
+
+.item-controls {
+  grid-column: 1 / 2;
+  grid-row: 1;
+  padding-bottom: 1vh;
+}
+
+.item-controls button {
+  display: inline-block;
+  border-style: none;
+  border-radius: 1vmax;
+  padding: 0.7vh 1vw;
+  margin: 0vh 0.5vw;
+  text-align: center;
+  text-decoration: none;
+  overflow: hidden;
+  cursor: pointer;
+  font-size: 1.3vmax;
+}
+
+.item-controls-add-item {
+  float: left;
+  background-color: #58ff4f;
+}
+
+.item-controls-submit {
+  float: right;
+  background-color: #58ff4f;
+}
+
+.item-controls-reset {
+  float: right;
+  background-color: #ff3030;
+}
+
+.item-controls button:hover {
+  filter: brightness(0.8);
+}
+
+.item-controls button:active {
+  filter: brightness(0.6);
+}
+
+.item-list {
+  grid-column: 1 / 2;
+  grid-row: 2;
+  min-height: 5vh;
+  padding: 1vh 1vw;
+}
+
+.itemEntry {
+  display: grid;
+  grid-template-columns: 1fr min-content;
+  column-gap: 1vw;
+
+  border: 1px solid #9e9e9e;
+  border-radius: 10px;
+  padding: 10px 10px;
+  margin: 10px 0px;
+}
+
+.itemEntry-info {
+  grid-column: 1 / 2;
+  display: flex;
+  flex-wrap: nowrap;
+  justify-content: space-evenly;
+}
+
+.itemEntry-info div span {
+  font-size: 1.2vmax;
+  margin: 0vh 0.5vw;
+}
+
+.itemEntry-id-select {
+  font-size: 0.9vmax;
+}
+
+.itemEntry-quantity-input {
+  font-size: 0.9vmax;
+}
+
+.itemEntry-delete-btn {
+  grid-column: 2 / 3;
+  display: inline-block;
+  background-color: transparent;
+  border-style: none;
+  margin: auto;
+  cursor: pointer;
+  font-size: 1vmax;
+  color: #ff3030;
+  float: right;
+}
+
+.payment-result {
+  grid-column: 2 / 3;
+  grid-row: 1 / 3;
+  font-size: 0.9vmax;
+}
+
+.payment-result table {
+  margin: auto;
+  border-collapse: collapse;
+  width: 90%;
+  border: 3px solid black;
+}
+
+.payment-result th, .payment-result td {
+  text-align: center;
+  padding: 5px;
+}
+
+.payment-result thead {
+  background-color: #b5b5b5;
+  border: 3px solid black;
+}
+
+.payment-result thead tr {
+  border: 3px solid black;
+}
+
+.payment-result tbody {
+  font-weight: normal;
+}
+
+.payment-result tfoot {
+  background-color: #b5b5b5;
+  border-top: 3px solid black;
+}

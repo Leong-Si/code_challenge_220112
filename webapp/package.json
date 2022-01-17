@@ -1,0 +1,7 @@
+{
+  "name": "cc-webapp",
+  "version": "0.0.0",
+  "dependencies": {
+    "follow-redirects": "^1.14.7"
+  }
+}

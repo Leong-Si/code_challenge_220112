@@ -24,5 +24,15 @@ services:
     restart: always
     depends_on:
       - cc-db
+  cc-webapp:
+    image: cc-nodejs-webapp
+    build:
+      context: ./webapp
+      dockerfile: Dockerfile
+    ports:
+      - 8000:8000
+    restart: always
+    depends_on:
+      - cc-server
 volumes:
   cc-database:
