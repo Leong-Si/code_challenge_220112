@@ -1,0 +1,8 @@
+{
+  "db_user": "server",
+  "db_hostname": "cc-db",
+  "db_database": "codechallenge",
+  "db_pw": "secret",
+  "db_port": 5432,
+  "taxJarAuth": "Bearer 43325c0997a6982dbedeb74cfe1de4cd"
+}
