@@ -198,7 +198,6 @@ const requestListener = function(req, res) {
               // Added header to allow using the api with localhost
               res.setHeader('Access-Control-Allow-Origin', '*');
               res.writeHead(200);
-              console.log(result);
               res.end(result);
             }, (err) => {
               res.writeHead(500);
@@ -210,7 +209,6 @@ const requestListener = function(req, res) {
               res.setHeader('Content-Type', 'application/json');
               // Added header to allow using the api with localhost
               res.setHeader('Access-Control-Allow-Origin', '*');
-              console.log(result);
               res.writeHead(200);
               res.end(result);
             }, (err) => {
